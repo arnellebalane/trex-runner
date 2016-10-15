@@ -1,3 +1,18 @@
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+
+
+.interstitial-wrapper {
+  width: 600px;
+  height: 150px;
+}
+
+
 #offline-resources {
   display: none;
 }
