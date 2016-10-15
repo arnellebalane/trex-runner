@@ -280,16 +280,11 @@ Runner.prototype = {
           document.getElementById(this.config.RESOURCE_TEMPLATE_ID).content;
 
       for (var sound in Runner.sounds) {
-        var soundSrc =
-            resourceTemplate.getElementById(Runner.sounds[sound]).src;
-        soundSrc = soundSrc.substr(soundSrc.indexOf(',') + 1);
-        var buffer = decodeBase64ToArrayBuffer(soundSrc);
-
-        // Async, so no guarantee of order in array.
-        this.audioContext.decodeAudioData(buffer, function(index, audioData) {
-            this.soundFx[index] = audioData;
-          }.bind(this, sound));
+        var soundSrc = document.getElementById(Runner.sounds[sound]);
+        this.soundFx[sound] = soundSrc;
       }
+
+      console.log(this.soundFx);
     }
   },
 
@@ -803,15 +798,12 @@ Runner.prototype = {
   },
 
   /**
-   * Play a sound.
-   * @param {SoundBuffer} soundBuffer
+   * Play a sound from a audio element source.
+   * @param {HTMLAudioElement} audioElement
    */
-  playSound: function(soundBuffer) {
-    if (soundBuffer) {
-      var sourceNode = this.audioContext.createBufferSource();
-      sourceNode.buffer = soundBuffer;
-      sourceNode.connect(this.audioContext.destination);
-      sourceNode.start(0);
+  playSound: function(audioElement) {
+    if (audioElement) {
+      audioElement.play();
     }
   },
 
