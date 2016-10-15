@@ -19,8 +19,6 @@ function Runner(outerContainerId, opt_config) {
 
   this.outerContainerEl = document.querySelector(outerContainerId);
   this.containerEl = null;
-  this.snackbarEl = null;
-  this.detailsButton = this.outerContainerEl.querySelector('#details-button');
 
   this.config = opt_config || Runner.config;
 
@@ -64,11 +62,7 @@ function Runner(outerContainerId, opt_config) {
   this.images = {};
   this.imagesLoaded = 0;
 
-  if (this.isDisabled()) {
-    this.setupDisabledRunner();
-  } else {
-    this.loadImages();
-  }
+  this.loadImages();
 }
 window['Runner'] = Runner;
 
@@ -145,7 +139,6 @@ Runner.classes = {
   CANVAS: 'runner-canvas',
   CONTAINER: 'runner-container',
   CRASHED: 'crashed',
-  ICON: 'icon-offline',
   INVERTED: 'inverted',
   SNACKBAR: 'snackbar',
   SNACKBAR_SHOW: 'snackbar-show',
@@ -229,32 +222,6 @@ Runner.events = {
 
 
 Runner.prototype = {
-  /**
-   * Whether the easter egg has been disabled. CrOS enterprise enrolled devices.
-   * @return {boolean}
-   */
-  isDisabled: function() {
-    return loadTimeData && loadTimeData.valueExists('disabledEasterEgg');
-  },
-
-  /**
-   * For disabled instances, set up a snackbar with the disabled message.
-   */
-  setupDisabledRunner: function() {
-    this.containerEl = document.createElement('div');
-    this.containerEl.className = Runner.classes.SNACKBAR;
-    this.containerEl.textContent = loadTimeData.getValue('disabledEasterEgg');
-    this.outerContainerEl.appendChild(this.containerEl);
-
-    // Show notification when the activation key is pressed.
-    document.addEventListener(Runner.events.KEYDOWN, function(e) {
-      if (Runner.keycodes.JUMP[e.keyCode]) {
-        this.containerEl.classList.add(Runner.classes.SNACKBAR_SHOW);
-        document.querySelector('.icon').classList.add('icon-disabled');
-      }
-    }.bind(this));
-  },
-
   /**
    * Setting individual settings for debugging.
    * @param {string} setting
@@ -347,10 +314,6 @@ Runner.prototype = {
    * Game initialiser.
    */
   init: function() {
-    // Hide the static icon.
-    document.querySelector('.' + Runner.classes.ICON).style.visibility =
-        'hidden';
-
     this.adjustDimensions();
     this.setSpeed();
 
@@ -662,28 +625,26 @@ Runner.prototype = {
       e.preventDefault();
     }
 
-    if (e.target != this.detailsButton) {
-      if (!this.crashed && (Runner.keycodes.JUMP[e.keyCode] ||
-           e.type == Runner.events.TOUCHSTART)) {
-        if (!this.playing) {
-          this.loadSounds();
-          this.playing = true;
-          this.update();
-          if (window.errorPageController) {
-            errorPageController.trackEasterEgg();
-          }
-        }
-        //  Play sound effect and jump on starting the game for the first time.
-        if (!this.tRex.jumping && !this.tRex.ducking) {
-          this.playSound(this.soundFx.BUTTON_PRESS);
-          this.tRex.startJump(this.currentSpeed);
+    if (!this.crashed && (Runner.keycodes.JUMP[e.keyCode] ||
+         e.type == Runner.events.TOUCHSTART)) {
+      if (!this.playing) {
+        this.loadSounds();
+        this.playing = true;
+        this.update();
+        if (window.errorPageController) {
+          errorPageController.trackEasterEgg();
         }
       }
+      //  Play sound effect and jump on starting the game for the first time.
+      if (!this.tRex.jumping && !this.tRex.ducking) {
+        this.playSound(this.soundFx.BUTTON_PRESS);
+        this.tRex.startJump(this.currentSpeed);
+      }
+    }
 
-      if (this.crashed && e.type == Runner.events.TOUCHSTART &&
-          e.currentTarget == this.containerEl) {
-        this.restart();
-      }
+    if (this.crashed && e.type == Runner.events.TOUCHSTART &&
+        e.currentTarget == this.containerEl) {
+      this.restart();
     }
 
     if (this.playing && !this.crashed && Runner.keycodes.DUCK[e.keyCode]) {
